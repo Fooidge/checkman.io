@@ -23,8 +23,8 @@ gulp.task 'build', ->
 	.pipe coffee
 		bare: true
 	.pipe concat 'main.js'
-	.pipe uglify
-		preserveComments: 'some'
+	# .pipe uglify
+	# 	preserveComments: 'some'
 	.pipe gulp.dest './htdocs/js'
 
 gulp.task 'link', ->
