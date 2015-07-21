@@ -2,8 +2,21 @@
 	background-color: $mainColor;
 }
 
+.heroPage-content {
+	margin-bottom: 15rem;
+}
+
 .heroPage-logo {
-	height: 5rem;
-	width: 5rem;
+	height: 10rem;
+	width: 10rem;
 	fill: $white;
+}
+
+.heroPage-salutation {
+	color: $white;
+	margin-top: 0.5rem;
+
+	strong {
+		font-weight: 500;
+	}
 }
