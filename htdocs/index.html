@@ -1,19 +1,19 @@
 <!DOCTYPE HTML>
-<html>
+<html data-ng-app="JC">
 	<head>
 		<title>Jordan Checkman</title>
-		<link rel="stylesheet" href="styles/master.css">
+		<link rel="stylesheet" href="css/master.css">
 	</head>
 	<body>
-		<!-- inject:svg -->
-		<!-- endinject -->
-		<section class="hero">
-			<canvas id="hero-background"></canvas>
-			<div class="hero-logo">JC</div>
-				<div class="hero-button"><span>About</span></div>
-				<div class="hero-button"><span>Work</span></div>
-		</section>
+		<div
+			style="display: none;"
+			data-ng-include="'icons.svg'">
+		</div>
+		<main
+			class="mainView"
+			data-ui-view>
+		</main>
+		<script src="js/libs.js"></script>
+		<script src="js/JC.js"></script>
 	</body>
-<script type="text/javascript" src="bower_components/pleasejs/dist/Please.js"></script>
-<script type="text/javascript" src="js/main.js"></script>
 </html>

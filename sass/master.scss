@@ -1,6 +1,4 @@
 @import 'bourbon/bourbon';
 @import 'neat/neat';
-@import 'reset';
-@import 'variables';
-@import 'fonts';
-@import 'hero';
+@import 'shared/shared';
+@import 'pages/pages';
