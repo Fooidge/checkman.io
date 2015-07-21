@@ -1,74 +1,124 @@
 gulp = require 'gulp'
+annotate = require 'gulp-ng-annotate'
+autoprefixer = require 'gulp-autoprefixer'
 bump = require 'gulp-bump'
-concat = require 'gulp-concat'
 coffee = require 'gulp-coffee'
-csscomb = require 'gulp-csscomb'
-inject = require 'gulp-inject'
+concat = require 'gulp-concat'
 rename = require 'gulp-rename'
 sass = require 'gulp-sass'
-svgmin = require 'gulp-svgmin'
 svgstore = require 'gulp-svgstore'
-symlink = require 'gulp-sym'
+svgmin = require 'gulp-svgmin'
+symlink = require 'gulp-symlink'
+merge = require 'merge-stream'
+ngTemplates = require 'gulp-ng-templates'
 uglify = require 'gulp-uglify'
+htmlmin = require 'gulp-htmlmin'
 
-gulp.task 'sass', ->
-	gulp.src './sass/master.scss'
-	.pipe sass
-		errLogToConsole: true
-	.pipe csscomb()
-	.pipe gulp.dest './htdocs/styles'
+swallowError = (error) ->
+	console.error error.toString()
+	this.emit 'end'
 
-gulp.task 'build', ->
-	gulp.src './app/**/*.coffee'
+src =
+	bourbon: './bower_components/bourbon/app/assets/stylesheets'
+	neat: './bower_components/neat/app/assets/stylesheets'
+	sass: './sass/master.scss'
+	allSass: './sass/**/*.scss'
+	app: './app/**/*.coffee'
+	templates: [
+		'./app/templates/**/*.html'
+		'./images/icons.svg'
+	]
+	icons: './images/svg/*.svg'
+	imagesLink: './images'
+
+dest =
+	js: './htdocs/js'
+	css: './htdocs/css'
+	images: './images'
+	bourbon: './sass/bourbon'
+	neat: './sass/neat'
+	imagesLink: './htdocs/images'
+
+libs = [
+	'bower_components/angular/angular.js'
+	'bower_components/angular-animate/angular-animate.js'
+	'bower_components/angular-resource/angular-resource.js'
+	'bower_components/angular-ui-router/release/angular-ui-router.js'
+	'bower_components/jquery/dist/jquery.js'
+	'bower_components/lodash/lodash.js'
+	'bower_components/moment/moment.js'
+	'bower_components/velocity/velocity.js'
+	# 'bower_components/d3/d3.js'
+]
+
+gulp.task 'libs', ->
+	gulp.src libs
+	.pipe concat 'libs.js'
+	.pipe gulp.dest dest.js
+
+gulp.task 'build', ['icons'], ->
+	app = gulp.src src.app
 	.pipe coffee
 		bare: true
-	.pipe concat 'main.js'
-	# .pipe uglify
-	# 	preserveComments: 'some'
-	.pipe gulp.dest './htdocs/js'
+	.on 'error', swallowError
+	.pipe annotate
+		singleQuotes: true
+	.on 'error', swallowError
+	.pipe concat 'JC.js'
+	.pipe gulp.dest dest.js
 
-gulp.task 'link', ->
-	gulp.src './bower_components/bourbon/app/assets/stylesheets'
-		.pipe symlink './sass/bourbon'
-	gulp.src './bower_components/neat/app/assets/stylesheets'
-		.pipe symlink './sass/neat'
+	templates = gulp.src src.templates
+	.pipe htmlmin
+		collapseWhitespace: true
+	.pipe ngTemplates 'JC-templates'
+	.on 'error', swallowError
+	.pipe concat 'JC.templates.js'
+	.pipe gulp.dest dest.js
 
-gulp.task 'bump-patch', ->
-	gulp.src ['./package.json', 'bower.json']
-	.pipe bump
-		type: 'patch'
-	.pipe gulp.dest './'
+	merge app, templates
+	.pipe concat 'JC.js'
+	.pipe gulp.dest dest.js
 
-gulp.task 'bump-minor', ->
-	gulp.src ['./package.json', 'bower.json']
-	.pipe bump
-		type: 'minor'
-	.pipe gulp.dest './'
+gulp.task 'default', ->
+	gulp.start 'build'
+	gulp.start 'sass'
 
-gulp.task 'bump-major', ->
-	gulp.src ['./package.json', 'bower.json']
-	.pipe bump
-		type: 'major'
-	.pipe gulp.dest './'
+gulp.task 'sass', ->
+	gulp.src src.sass
+	.pipe sass
+		outputStyle: 'compressed'
+	.on 'error', swallowError
+	.pipe autoprefixer
+		browsers: ['last 2 versions']
+		cascade: false
+	.on 'error', swallowError
+	.pipe gulp.dest dest.css
 
-gulp.task 'svg', ->
-	gulp.src './images/svg/*.svg'
+gulp.task 'icons', ->
+	gulp.src src.icons
 	.pipe rename
 		prefix: 'icon-'
-	.pipe svgstore()
 	.pipe svgmin
 		js2svg:
 			pretty: true
+	.pipe svgstore()
 	.pipe rename 'icons.svg'
-	.pipe gulp.dest './images'
+	.pipe gulp.dest dest.images
 
-	# target = gulp.src './index.html'
-	# sources = gulp.src ['./images/icons.svg'], read: false
-	# target.pipe inject sources
-	# .pipe gulp.dest './'
+gulp.task 'link', ->
+	gulp.src src.bourbon
+	.pipe symlink dest.bourbon,
+		force: true
 
-gulp.task 'default', ->
-	gulp.start 'sass'
+	gulp.src src.neat
+	.pipe symlink dest.neat,
+		force: true
+
+	gulp.src src.imagesLink
+	.pipe symlink dest.imagesLink,
+		force: true
 
 gulp.task 'watch', ->
-	gulp.watch ['./sass/*.scss'], 'sass'
+	gulp.watch src.allSass, ['sass']
+	gulp.watch [src.app, src.templates[0]], ['build']
+	gulp.watch src.icons, ['icons']
