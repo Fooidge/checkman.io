@@ -8,6 +8,8 @@ angular.module('JC').config(["$stateProvider", "$urlRouterProvider", function($s
   });
 }]);
 
+var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
 angular.module('JC').directive('animatedBackground', function() {
   return {
     restrict: 'E',
@@ -16,17 +18,70 @@ angular.module('JC').directive('animatedBackground', function() {
     replace: true,
     templateUrl: 'components/animatedBackground.html',
     controller: ["$window", "$element", function($window, $element) {
-      var _MAX_PARTICLES, _animate, _canvas, _clearCanvas, _context, _drawParticle, _screenHeight, _screenWidth;
+      var Partical, _MAX_PARTICLES, _animate, _canvas, _clearCanvas, _context, _getRandomInRange, _getRandomIntInRange, _screenHeight, _screenWidth, i, j, part, particals, ref, resizeCanvas;
       _MAX_PARTICLES = 100;
       _screenHeight = $window.outerHeight;
       _screenWidth = $window.outerWidth;
       _canvas = $element[0];
       _context = _canvas.getContext('2d');
+      resizeCanvas = function() {
+        _screenHeight = $window.outerHeight;
+        _screenWidth = $window.outerWidth;
+        _canvas.width = _screenWidth;
+        return _canvas.height = _screenHeight;
+      };
       _clearCanvas = function() {
         return _context.clearRect(0, 0, _screenWidth, _screenHeight);
       };
-      _drawParticle = function() {};
-      _animate = function() {};
+      _getRandomIntInRange = function(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      };
+      _getRandomInRange = function(min, max) {
+        return Math.random() * (max - min + 1) + min;
+      };
+      Partical = (function() {
+        function Partical() {
+          this.draw = bind(this.draw, this);
+          this.x = _getRandomIntInRange(0, _screenWidth);
+          this.y = _getRandomIntInRange(0, _screenHeight);
+          this.size = _getRandomInRange(0.5, 1.5);
+          this.lifeForce = _getRandomInRange(0.45, 1);
+          this.velocity = Math.random();
+        }
+
+        Partical.prototype.draw = function() {
+          if (this.lifeForce <= 0) {
+            this.constructor();
+          }
+          this.lifeForce -= 0.0005;
+          this.x += 0.05;
+          this.y += 0.05;
+          _context.beginPath();
+          _context.arc(this.x, this.y, this.size, 0, 2 * Math.PI, false);
+          _context.fillStyle = "rgba(255, 255, 255 ," + this.lifeForce + ")";
+          return _context.fill();
+        };
+
+        return Partical;
+
+      })();
+      _animate = function() {
+        var j, len, part;
+        _clearCanvas();
+        for (j = 0, len = particals.length; j < len; j++) {
+          part = particals[j];
+          part.draw();
+        }
+        return requestAnimationFrame(_animate);
+      };
+      resizeCanvas();
+      $window.addEventListener('resize', resizeCanvas, false);
+      particals = [];
+      for (i = j = 0, ref = _MAX_PARTICLES; j <= ref; i = j += 1) {
+        part = new Partical();
+        particals.push(part);
+      }
+      _animate();
     }]
   };
 });
