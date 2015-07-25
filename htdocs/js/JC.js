@@ -18,8 +18,9 @@ angular.module('JC').directive('animatedBackground', function() {
     replace: true,
     templateUrl: 'components/animatedBackground.html',
     controller: ["$window", "$element", function($window, $element) {
-      var Partical, _MAX_PARTICLES, _animate, _canvas, _clearCanvas, _context, _getRandomInRange, _getRandomIntInRange, _screenHeight, _screenWidth, i, j, part, particals, ref, resizeCanvas;
+      var Particle, _MAX_PARTICLES, _PARTICLE_DECAY_RATE, _animate, _canvas, _clearCanvas, _clearParticle, _context, _getRandomInRange, _getRandomIntInRange, _screenHeight, _screenWidth, i, j, part, particles, ref, resizeCanvas;
       _MAX_PARTICLES = 100;
+      _PARTICLE_DECAY_RATE = 0.005;
       _screenHeight = $window.outerHeight;
       _screenWidth = $window.outerWidth;
       _canvas = $element[0];
@@ -39,47 +40,75 @@ angular.module('JC').directive('animatedBackground', function() {
       _getRandomInRange = function(min, max) {
         return Math.random() * (max - min + 1) + min;
       };
-      Partical = (function() {
-        function Partical() {
+      Particle = (function() {
+        function Particle() {
           this.draw = bind(this.draw, this);
           this.x = _getRandomIntInRange(0, _screenWidth);
           this.y = _getRandomIntInRange(0, _screenHeight);
-          this.size = _getRandomInRange(0.5, 1.5);
-          this.lifeForce = _getRandomInRange(0.45, 1);
-          this.velocity = Math.random();
+          this.size = _getRandomInRange(1.5, 2);
+          this.lifeForce = 0;
+          this.lifePeak = false;
+          this.maxLifeForce = _getRandomInRange(0.45, 1);
+          this.velocity = [_getRandomInRange(-1, 1), _getRandomInRange(-1, 1), _getRandomInRange(-1, 1)];
         }
 
-        Partical.prototype.draw = function() {
-          if (this.lifeForce <= 0) {
+        Particle.prototype.draw = function() {
+          if (this.lifeForce <= 0 && this.lifePeak) {
             this.constructor();
           }
-          this.lifeForce -= 0.0005;
-          this.x += 0.05;
-          this.y += 0.05;
+          if (this.lifePeak) {
+            this.lifeForce -= _PARTICLE_DECAY_RATE;
+          } else if (!this.lifePeak) {
+            this.lifeForce += _PARTICLE_DECAY_RATE;
+          }
+          if (this.lifeForce >= this.maxLifeForce) {
+            this.lifePeak = true;
+          }
+          this.x += this.velocity[0];
+          if (this.x > _screenWidth) {
+            this.x = 0;
+          } else if (this.x < 0) {
+            this.x = _screenWidth;
+          }
+          this.y += this.velocity[1];
+          if (this.y > _screenHeight) {
+            this.y = 0;
+          } else if (this.y < 0) {
+            this.y = _screenHeight;
+          }
           _context.beginPath();
           _context.arc(this.x, this.y, this.size, 0, 2 * Math.PI, false);
           _context.fillStyle = "rgba(255, 255, 255 ," + this.lifeForce + ")";
           return _context.fill();
         };
 
-        return Partical;
+        return Particle;
 
       })();
+      _clearParticle = function(particle) {
+        var particleRadius, xEnd, xStart, yEnd, yStart;
+        particleRadius = particle.size * Math.PI;
+        xStart = particle.x - particleRadius;
+        xEnd = particle.x + particleRadius;
+        yStart = particle.y - particleRadius;
+        yEnd = particle.y + particleRadius;
+        _context.clearRect(xStart, yStart, xEnd, yEnd);
+      };
       _animate = function() {
         var j, len, part;
         _clearCanvas();
-        for (j = 0, len = particals.length; j < len; j++) {
-          part = particals[j];
+        for (j = 0, len = particles.length; j < len; j++) {
+          part = particles[j];
           part.draw();
         }
         return requestAnimationFrame(_animate);
       };
       resizeCanvas();
       $window.addEventListener('resize', resizeCanvas, false);
-      particals = [];
+      particles = [];
       for (i = j = 0, ref = _MAX_PARTICLES; j <= ref; i = j += 1) {
-        part = new Partical();
-        particals.push(part);
+        part = new Particle();
+        particles.push(part);
       }
       _animate();
     }]

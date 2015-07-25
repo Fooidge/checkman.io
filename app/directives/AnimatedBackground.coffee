@@ -7,6 +7,7 @@ angular.module 'JC'
 	templateUrl: 'components/animatedBackground.html'
 	controller: ($window, $element) ->
 		_MAX_PARTICLES = 100
+		_PARTICLE_DECAY_RATE = 0.005
 		_screenHeight = $window.outerHeight
 		_screenWidth = $window.outerWidth
 		_canvas = $element[0]
@@ -26,40 +27,64 @@ angular.module 'JC'
 		_getRandomInRange = (min, max) ->
 			Math.random() * (max - min + 1) + min;
 
-		class Partical
+		class Particle
 			constructor: ->
 				@x = _getRandomIntInRange 0, _screenWidth
 				@y = _getRandomIntInRange 0, _screenHeight
-				@size = _getRandomInRange 0.5, 1.5
-				@lifeForce = _getRandomInRange 0.45 , 1
-				@velocity = Math.random()
+				@size = _getRandomInRange 1.5, 2
+				@lifeForce = 0
+				@lifePeak = false
+				@maxLifeForce = _getRandomInRange 0.45 , 1
+				@velocity = [
+					_getRandomInRange -1, 1
+					_getRandomInRange -1, 1
+					_getRandomInRange -1, 1
+				]
 
 			draw: =>
-				if @lifeForce <= 0
+				if @lifeForce <= 0 and @lifePeak
 					@constructor()
 				#changes
-				@lifeForce -= 0.0005
-				@x += 0.05
-				@y += 0.05
+				if @lifePeak then @lifeForce -= _PARTICLE_DECAY_RATE
+				else if !@lifePeak then @lifeForce += _PARTICLE_DECAY_RATE
+				if @lifeForce >= @maxLifeForce then @lifePeak = true
+				#If particle leaves screen, put them on the other side
+				@x += @velocity[0]
+				if @x > _screenWidth then @x = 0
+				else if @x < 0 then @x = _screenWidth
+				@y += @velocity[1]
+				if @y > _screenHeight then @y = 0
+				else if @y < 0 then @y = _screenHeight
 				_context.beginPath()
 				_context.arc @x, @y, @size, 0, 2 * Math.PI, false
 				_context.fillStyle = "rgba(255, 255, 255 ,#{@lifeForce})"
 				_context.fill()
 
 
+
+		_clearParticle = (particle) ->
+			particleRadius = particle.size * Math.PI
+			xStart = particle.x - particleRadius
+			xEnd = particle.x + particleRadius
+			yStart = particle.y - particleRadius
+			yEnd = particle.y + particleRadius
+			_context.clearRect xStart, yStart, xEnd, yEnd
+			return
+
 		_animate = ->
 			_clearCanvas()
-			for part in particals
+			for part in particles
+				# _clearParticle part
 				part.draw()
 
 			requestAnimationFrame _animate
 
 		resizeCanvas()
 		$window.addEventListener 'resize', resizeCanvas, false
-		particals = []
+		particles = []
 		for i in [0.._MAX_PARTICLES] by 1
-			part = new Partical()
-			particals.push part
+			part = new Particle()
+			particles.push part
 		_animate()
 
 		return
