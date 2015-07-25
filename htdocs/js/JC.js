@@ -21,13 +21,14 @@ angular.module('JC').directive('animatedBackground', function() {
       var Particle, _MAX_PARTICLES, _PARTICLE_DECAY_RATE, _animate, _canvas, _clearCanvas, _clearParticle, _context, _getRandomInRange, _getRandomIntInRange, _screenHeight, _screenWidth, i, j, part, particles, ref, resizeCanvas;
       _MAX_PARTICLES = 100;
       _PARTICLE_DECAY_RATE = 0.005;
-      _screenHeight = $window.outerHeight;
-      _screenWidth = $window.outerWidth;
+      _screenHeight = $window.innerHeight;
+      _screenWidth = $window.innerWidth;
       _canvas = $element[0];
       _context = _canvas.getContext('2d');
+      console.log($window);
       resizeCanvas = function() {
-        _screenHeight = $window.outerHeight;
-        _screenWidth = $window.outerWidth;
+        _screenHeight = $window.innerHeight;
+        _screenWidth = $window.innerWidth;
         _canvas.width = _screenWidth;
         return _canvas.height = _screenHeight;
       };

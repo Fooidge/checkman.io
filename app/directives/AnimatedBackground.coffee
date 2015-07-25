@@ -8,14 +8,15 @@ angular.module 'JC'
 	controller: ($window, $element) ->
 		_MAX_PARTICLES = 100
 		_PARTICLE_DECAY_RATE = 0.005
-		_screenHeight = $window.outerHeight
-		_screenWidth = $window.outerWidth
+		_screenHeight = $window.innerHeight
+		_screenWidth = $window.innerWidth
 		_canvas = $element[0]
 		_context = _canvas.getContext '2d'
+		console.log $window
 
 		resizeCanvas = ->
-			_screenHeight = $window.outerHeight
-			_screenWidth = $window.outerWidth
+			_screenHeight = $window.innerHeight
+			_screenWidth = $window.innerWidth
 			_canvas.width = _screenWidth
 			_canvas.height = _screenHeight
 
