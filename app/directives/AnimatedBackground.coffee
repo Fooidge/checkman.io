@@ -19,6 +19,17 @@ angular.module 'JC'
 			_screenWidth = $window.innerWidth
 			_canvas.width = _screenWidth
 			_canvas.height = _screenHeight
+			return
+
+		mousePosition = (event) ->
+			_rect = _canvas.getBoundingClientRect()
+			_cursorPosition = {
+				x: event.clientX - rect.left
+				y: event.clientY - rect.top
+			}
+			console.log _cursorPosition
+			return
+
 
 		_clearCanvas = -> _context.clearRect 0, 0, _screenWidth, _screenHeight
 
@@ -82,6 +93,7 @@ angular.module 'JC'
 
 		resizeCanvas()
 		$window.addEventListener 'resize', resizeCanvas, false
+		_canvas.addEventListener 'mousemove', mousePosition(evt), false
 		particles = []
 		for i in [0.._MAX_PARTICLES] by 1
 			part = new Particle()
