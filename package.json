@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "description": "",
   "main": "index.html",
-  "dependencies": {},
+  "dependencies": {
+    "pointer-lock": "0.0.4"
+  },
   "devDependencies": {
     "cheerio": "^0.19.0",
     "coffee-script": "^1.9.3",

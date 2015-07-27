@@ -18,11 +18,12 @@ angular.module('JC').directive('animatedBackground', function() {
     replace: true,
     templateUrl: 'components/animatedBackground.html',
     controller: ["$window", "$element", function($window, $element) {
-      var Particle, _MAX_PARTICLES, _PARTICLE_DECAY_RATE, _animate, _canvas, _clearCanvas, _clearParticle, _context, _getRandomInRange, _getRandomIntInRange, _screenHeight, _screenWidth, i, j, mousePosition, part, particles, ref, resizeCanvas;
-      _MAX_PARTICLES = 100;
+      var Particle, _MAX_PARTICLES, _PARTICLE_DECAY_RATE, _animate, _canvas, _changeGravity, _clearCanvas, _clearParticle, _context, _getRandomInRange, _getRandomIntInRange, _screenCenter, _screenHeight, _screenWidth, i, j, mousePosition, part, particles, ref, resizeCanvas;
+      _MAX_PARTICLES = 150;
       _PARTICLE_DECAY_RATE = 0.005;
       _screenHeight = $window.innerHeight;
       _screenWidth = $window.innerWidth;
+      _screenCenter = [_screenWidth / 2, _screenHeight / 2];
       _canvas = $element[0];
       _context = _canvas.getContext('2d');
       resizeCanvas = function() {
@@ -30,15 +31,27 @@ angular.module('JC').directive('animatedBackground', function() {
         _screenWidth = $window.innerWidth;
         _canvas.width = _screenWidth;
         _canvas.height = _screenHeight;
+        _screenCenter = [_screenWidth / 2, _screenHeight / 2];
       };
       mousePosition = function(event) {
         var _cursorPosition, _rect;
+        console.log(event);
         _rect = _canvas.getBoundingClientRect();
         _cursorPosition = {
           x: event.clientX - _rect.left,
           y: event.clientY - _rect.top
         };
-        console.log(_cursorPosition);
+        _changeGravity(event);
+      };
+      _changeGravity = function(cursor) {
+        var j, len, part, results;
+        results = [];
+        for (j = 0, len = particles.length; j < len; j++) {
+          part = particles[j];
+          part.x += event.movementX / 5;
+          results.push(part.y += event.movementY / 5);
+        }
+        return results;
       };
       _clearCanvas = function() {
         return _context.clearRect(0, 0, _screenWidth, _screenHeight);

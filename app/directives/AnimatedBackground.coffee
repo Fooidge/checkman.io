@@ -6,10 +6,11 @@ angular.module 'JC'
 	replace: true
 	templateUrl: 'components/animatedBackground.html'
 	controller: ($window, $element) ->
-		_MAX_PARTICLES = 100
+		_MAX_PARTICLES = 150
 		_PARTICLE_DECAY_RATE = 0.005
 		_screenHeight = $window.innerHeight
 		_screenWidth = $window.innerWidth
+		_screenCenter = [_screenWidth/2, _screenHeight/2]
 		_canvas = $element[0]
 		_context = _canvas.getContext '2d'
 
@@ -18,16 +19,23 @@ angular.module 'JC'
 			_screenWidth = $window.innerWidth
 			_canvas.width = _screenWidth
 			_canvas.height = _screenHeight
+			_screenCenter = [_screenWidth/2, _screenHeight/2]
 			return
 
 		mousePosition = (event) ->
+			console.log event
 			_rect = _canvas.getBoundingClientRect()
 			_cursorPosition = {
 				x: event.clientX - _rect.left
 				y: event.clientY - _rect.top
 			}
-			console.log _cursorPosition
+			_changeGravity event
 			return
+
+		_changeGravity = (cursor) ->
+			for part in particles
+				part.x += event.movementX/5
+				part.y += event.movementY/5
 
 
 		_clearCanvas = -> _context.clearRect 0, 0, _screenWidth, _screenHeight
