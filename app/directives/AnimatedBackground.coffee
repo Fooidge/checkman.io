@@ -23,7 +23,6 @@ angular.module 'JC'
 			return
 
 		mousePosition = (event) ->
-			console.log event
 			_rect = _canvas.getBoundingClientRect()
 			_cursorPosition = {
 				x: event.clientX - _rect.left
@@ -32,10 +31,15 @@ angular.module 'JC'
 			_changeGravity event
 			return
 
-		_changeGravity = (cursor) ->
-			for part in particles
-				part.x += event.movementX/5
-				part.y += event.movementY/5
+		_changeGravity = (event) ->
+			if event.movementX or event.mozMovementX
+				movement =
+					x: event.movementX or event.mozMovementX or 0
+					y: event.movementY or event.mozMovementY or 0
+				console.log movement
+				for part in particles
+					part.x += movement.x/5
+					part.y += movement.y/5
 
 
 		_clearCanvas = -> _context.clearRect 0, 0, _screenWidth, _screenHeight

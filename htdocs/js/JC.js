@@ -35,7 +35,6 @@ angular.module('JC').directive('animatedBackground', function() {
       };
       mousePosition = function(event) {
         var _cursorPosition, _rect;
-        console.log(event);
         _rect = _canvas.getBoundingClientRect();
         _cursorPosition = {
           x: event.clientX - _rect.left,
@@ -43,15 +42,22 @@ angular.module('JC').directive('animatedBackground', function() {
         };
         _changeGravity(event);
       };
-      _changeGravity = function(cursor) {
-        var j, len, part, results;
-        results = [];
-        for (j = 0, len = particles.length; j < len; j++) {
-          part = particles[j];
-          part.x += event.movementX / 5;
-          results.push(part.y += event.movementY / 5);
+      _changeGravity = function(event) {
+        var j, len, movement, part, results;
+        if (event.movementX || event.mozMovementX) {
+          movement = {
+            x: event.movementX || event.mozMovementX || 0,
+            y: event.movementY || event.mozMovementY || 0
+          };
+          console.log(movement);
+          results = [];
+          for (j = 0, len = particles.length; j < len; j++) {
+            part = particles[j];
+            part.x += movement.x / 5;
+            results.push(part.y += movement.y / 5);
+          }
+          return results;
         }
-        return results;
       };
       _clearCanvas = function() {
         return _context.clearRect(0, 0, _screenWidth, _screenHeight);
