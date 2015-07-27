@@ -12,7 +12,6 @@ angular.module 'JC'
 		_screenWidth = $window.innerWidth
 		_canvas = $element[0]
 		_context = _canvas.getContext '2d'
-		console.log $window
 
 		resizeCanvas = ->
 			_screenHeight = $window.innerHeight
@@ -24,8 +23,8 @@ angular.module 'JC'
 		mousePosition = (event) ->
 			_rect = _canvas.getBoundingClientRect()
 			_cursorPosition = {
-				x: event.clientX - rect.left
-				y: event.clientY - rect.top
+				x: event.clientX - _rect.left
+				y: event.clientY - _rect.top
 			}
 			console.log _cursorPosition
 			return
@@ -93,7 +92,7 @@ angular.module 'JC'
 
 		resizeCanvas()
 		$window.addEventListener 'resize', resizeCanvas, false
-		_canvas.addEventListener 'mousemove', mousePosition(evt), false
+		_canvas.addEventListener 'mousemove', (evt) -> mousePosition evt , false
 		particles = []
 		for i in [0.._MAX_PARTICLES] by 1
 			part = new Particle()
