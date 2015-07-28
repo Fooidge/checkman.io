@@ -1,0 +1,19 @@
+.button {
+	@include appearance(none);
+	outline: 0;
+	border: 0;
+	background-color: transparent;
+	cursor: pointer;
+}
+
+.button--hero {
+	position: absolute;
+	width: 9.375rem;
+	text-transform: uppercase;
+}
+
+.button--work {
+	left: 50%;
+	bottom: 0;
+	margin-left: -4.6875rem;
+}
