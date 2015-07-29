@@ -7,7 +7,8 @@ angular.module 'JC'
 	templateUrl: 'components/animatedBackground.html'
 	controller: ($window, $element, jmath) ->
 		_MAX_PARTICLES = 150
-		_PARTICLE_DECAY_RATE = 0.005
+		_MAX_ATTRACTORS = 1
+		_PARTICLE_DECAY_RATE = 0.0025
 		_screenHeight = $window.innerHeight
 		_screenWidth = $window.innerWidth
 		_screenCenter = [_screenWidth/2, _screenHeight/2]
@@ -31,12 +32,19 @@ angular.module 'JC'
 			_changeGravity event
 			return
 
+		mouseClick = (event) ->
+			att = new Attractor event.clientX, event.clientY
+			attractors.unshift att
+			if attractors.length > _MAX_ATTRACTORS
+				attractors.pop()
+			return
+
+
 		_changeGravity = (event) ->
 			if event.movementX or event.mozMovementX
 				movement =
 					x: event.movementX or event.mozMovementX or 0
 					y: event.movementY or event.mozMovementY or 0
-				console.log movement
 				for part in particles
 					part.x += movement.x/5
 					part.y += movement.y/5
@@ -71,12 +79,27 @@ angular.module 'JC'
 				@y += @velocity[1]
 				if @y > _screenHeight then @y = 0
 				else if @y < 0 then @y = _screenHeight
+				#find closest attractor
+				for attractor in attractors
+					@x +=  100/Math.pow(@x - attractor.x, 2)
+					@y += 100/Math.pow(@y - attractor.y, 2)
+				#draw
 				_context.beginPath()
 				_context.arc @x, @y, @size, 0, 2 * Math.PI, false
-				_context.fillStyle = "rgba(255, 255, 255 ,#{@lifeForce})"
+				_context.fillStyle = "rgba(255, 255, 255, #{@lifeForce})"
 				_context.fill()
 
+		class Attractor
+			constructor: (x = 0, y = 0) ->
+				@x = x
+				@y = y
+				@size = 10
 
+			draw: =>
+				_context.beginPath()
+				_context.arc @x, @y, @size, 0, 2 * Math.PI, false
+				_context.fillStyle = "rgba(0, 0, 0, 0.25)"
+				_context.fill()
 
 		_clearParticle = (particle) ->
 			particleRadius = particle.size * Math.PI
@@ -92,13 +115,17 @@ angular.module 'JC'
 			for part in particles
 				# _clearParticle part
 				part.draw()
+			for attractor in attractors
+				attractor.draw()
 
 			requestAnimationFrame _animate
 
 		resizeCanvas()
 		$window.addEventListener 'resize', resizeCanvas, false
 		_canvas.addEventListener 'mousemove', (evt) -> mousePosition evt , false
+		_canvas.addEventListener 'click', (evt) -> mouseClick evt , false
 		particles = []
+		attractors = []
 		for i in [0.._MAX_PARTICLES] by 1
 			part = new Particle()
 			particles.push part
