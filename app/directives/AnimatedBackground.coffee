@@ -25,10 +25,9 @@ angular.module 'JC'
 
 		mousePosition = (event) ->
 			_rect = _canvas.getBoundingClientRect()
-			_cursorPosition = {
+			_cursorPosition =
 				x: event.clientX - _rect.left
 				y: event.clientY - _rect.top
-			}
 			_changeGravity event
 			return
 
@@ -119,6 +118,7 @@ angular.module 'JC'
 				attractor.draw()
 
 			requestAnimationFrame _animate
+			return
 
 		resizeCanvas()
 		$window.addEventListener 'resize', resizeCanvas, false
