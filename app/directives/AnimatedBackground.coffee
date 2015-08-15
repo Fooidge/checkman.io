@@ -5,8 +5,8 @@ angular.module 'JC'
 	controllerAs: 'canvas'
 	replace: true
 	templateUrl: 'components/animatedBackground.html'
-	controller: ($window, $element, jmath) ->
-		_MAX_PARTICLES = 150
+	controller: ($window, $element) ->
+		_MAX_PARTICLES = 25
 		_MAX_ATTRACTORS = 1
 		_PARTICLE_DECAY_RATE = 0.0025
 		_screenHeight = $window.innerHeight
@@ -53,15 +53,15 @@ angular.module 'JC'
 
 		class Particle
 			constructor: ->
-				@x = jmath.getRandomIntInRange 0, _screenWidth
-				@y = jmath.getRandomIntInRange 0, _screenHeight
-				@size = jmath.getRandomInRange 1.5, 2
+				@x = _.random 0, _screenWidth
+				@y = _.random 0, _screenHeight
+				@size = _.random 1.5, 3.5, true
 				@lifeForce = 0
 				@lifePeak = false
-				@maxLifeForce = jmath.getRandomInRange 0.45 , 1
+				@maxLifeForce = _.random 0.45, 1, true
 				@velocity = [
-					jmath.getRandomInRange -1, 1
-					jmath.getRandomInRange -1, 1
+					_.random -1, 1, true
+					_.random -1, 1, true
 				]
 
 			draw: =>
