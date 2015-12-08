@@ -18,13 +18,11 @@ angular.module('JC').directive('animatedBackground', function() {
     replace: true,
     templateUrl: 'components/animatedBackground.html',
     controller: ["$window", "$element", function($window, $element) {
-      var Attractor, Particle, _MAX_ATTRACTORS, _MAX_PARTICLES, _PARTICLE_DECAY_RATE, _animate, _canvas, _changeGravity, _clearCanvas, _clearParticle, _context, _screenCenter, _screenHeight, _screenWidth, attractors, i, j, mouseClick, mousePosition, part, particles, ref, resizeCanvas;
+      var Particle, _MAX_PARTICLES, _PARTICLE_DECAY_RATE, _animate, _canvas, _clearCanvas, _context, _screenHeight, _screenWidth, i, j, part, particles, ref, resizeCanvas;
       _MAX_PARTICLES = 25;
-      _MAX_ATTRACTORS = 1;
       _PARTICLE_DECAY_RATE = 0.0025;
       _screenHeight = $window.innerHeight;
       _screenWidth = $window.innerWidth;
-      _screenCenter = [_screenWidth / 2, _screenHeight / 2];
       _canvas = $element[0];
       _context = _canvas.getContext('2d');
       resizeCanvas = function() {
@@ -32,40 +30,6 @@ angular.module('JC').directive('animatedBackground', function() {
         _screenWidth = $window.innerWidth;
         _canvas.width = _screenWidth;
         _canvas.height = _screenHeight;
-        _screenCenter = [_screenWidth / 2, _screenHeight / 2];
-      };
-      mousePosition = function(event) {
-        var _cursorPosition, _rect;
-        _rect = _canvas.getBoundingClientRect();
-        _cursorPosition = {
-          x: event.clientX - _rect.left,
-          y: event.clientY - _rect.top
-        };
-        _changeGravity(event);
-      };
-      mouseClick = function(event) {
-        var att;
-        att = new Attractor(event.clientX, event.clientY);
-        attractors.unshift(att);
-        if (attractors.length > _MAX_ATTRACTORS) {
-          attractors.pop();
-        }
-      };
-      _changeGravity = function(event) {
-        var j, len, movement, part, results;
-        if (event.movementX || event.mozMovementX) {
-          movement = {
-            x: event.movementX || event.mozMovementX || 0,
-            y: event.movementY || event.mozMovementY || 0
-          };
-          results = [];
-          for (j = 0, len = particles.length; j < len; j++) {
-            part = particles[j];
-            part.x += movement.x / 5;
-            results.push(part.y += movement.y / 5);
-          }
-          return results;
-        }
       };
       _clearCanvas = function() {
         return _context.clearRect(0, 0, _screenWidth, _screenHeight);
@@ -73,6 +37,11 @@ angular.module('JC').directive('animatedBackground', function() {
       Particle = (function() {
         function Particle() {
           this.draw = bind(this.draw, this);
+          this.initialize = bind(this.initialize, this);
+          this.initialize();
+        }
+
+        Particle.prototype.initialize = function() {
           this.x = _.random(0, _screenWidth);
           this.y = _.random(0, _screenHeight);
           this.size = _.random(1.5, 3.5, true);
@@ -80,12 +49,11 @@ angular.module('JC').directive('animatedBackground', function() {
           this.lifePeak = false;
           this.maxLifeForce = _.random(0.45, 1, true);
           this.velocity = [_.random(-1, 1, true), _.random(-1, 1, true)];
-        }
+        };
 
         Particle.prototype.draw = function() {
-          var attractor, j, len;
           if (this.lifeForce <= 0 && this.lifePeak) {
-            this.constructor();
+            this.initialize();
           }
           if (this.lifePeak) {
             this.lifeForce -= _PARTICLE_DECAY_RATE;
@@ -107,76 +75,27 @@ angular.module('JC').directive('animatedBackground', function() {
           } else if (this.y < 0) {
             this.y = _screenHeight;
           }
-          for (j = 0, len = attractors.length; j < len; j++) {
-            attractor = attractors[j];
-            this.x += 100 / Math.pow(this.x - attractor.x, 2);
-            this.y += 100 / Math.pow(this.y - attractor.y, 2);
-          }
           _context.beginPath();
           _context.arc(this.x, this.y, this.size, 0, 2 * Math.PI, false);
           _context.fillStyle = "rgba(255, 255, 255, " + this.lifeForce + ")";
-          return _context.fill();
+          _context.fill();
         };
 
         return Particle;
 
       })();
-      Attractor = (function() {
-        function Attractor(x, y) {
-          if (x == null) {
-            x = 0;
-          }
-          if (y == null) {
-            y = 0;
-          }
-          this.draw = bind(this.draw, this);
-          this.x = x;
-          this.y = y;
-          this.size = 10;
-        }
-
-        Attractor.prototype.draw = function() {
-          _context.beginPath();
-          _context.arc(this.x, this.y, this.size, 0, 2 * Math.PI, false);
-          _context.fillStyle = "rgba(0, 0, 0, 0.25)";
-          return _context.fill();
-        };
-
-        return Attractor;
-
-      })();
-      _clearParticle = function(particle) {
-        var particleRadius, xEnd, xStart, yEnd, yStart;
-        particleRadius = particle.size * Math.PI;
-        xStart = particle.x - particleRadius;
-        xEnd = particle.x + particleRadius;
-        yStart = particle.y - particleRadius;
-        yEnd = particle.y + particleRadius;
-        _context.clearRect(xStart, yStart, xEnd, yEnd);
-      };
       _animate = function() {
-        var attractor, j, k, len, len1, part;
+        var j, len, part;
         _clearCanvas();
         for (j = 0, len = particles.length; j < len; j++) {
           part = particles[j];
           part.draw();
         }
-        for (k = 0, len1 = attractors.length; k < len1; k++) {
-          attractor = attractors[k];
-          attractor.draw();
-        }
         requestAnimationFrame(_animate);
       };
       resizeCanvas();
       $window.addEventListener('resize', resizeCanvas, false);
-      _canvas.addEventListener('mousemove', function(evt) {
-        return mousePosition(evt, false);
-      });
-      _canvas.addEventListener('click', function(evt) {
-        return mouseClick(evt, false);
-      });
       particles = [];
-      attractors = [];
       for (i = j = 0, ref = _MAX_PARTICLES; j <= ref; i = j += 1) {
         part = new Particle();
         particles.push(part);
